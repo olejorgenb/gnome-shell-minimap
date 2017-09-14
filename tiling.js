@@ -414,14 +414,12 @@ PreviewedWindowNavigator = new Lang.Class({
     _finish: function(timestamp) {
         this.was_accepted = true;
         debug('Finish', this._getWindowList()[this._selectedIndex].title);
-        // this._onDestroy();
         this.parent(timestamp);
-        this._onDestroy();
         debug('Finish finished');
     },
 
     _onDestroy: function() {
-        debug('Destroy:', this._getWindowList()[index].title);
+        debug('Destroy:');
         if(!this.was_accepted && this._selectedIndex != focus()) {
             debug('Abort', global.display.focus_window.title);
             ensure_viewport(global.display.focus_window);
