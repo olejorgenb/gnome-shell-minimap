@@ -107,11 +107,11 @@ ensure_viewport = (meta_window, force) => {
         debug('already ensuring', meta_window.title);
         return;
     }
+    debug('Ensuring', meta_window.title);
 
     let workspace = workspaces[meta_window.get_workspace().workspace_index];
     let index = workspace.indexOf(meta_window)
     function move_to(meta_window, position) {
-        debug('ensure, workspace length', workspace.length);
         ensuring = meta_window;
         move(meta_window, position, statusbar_height + margin_tb, () => { ensuring = false });
         propogate_forward(workspace, index + 1, position + frame.width + window_gap, true);
@@ -172,7 +172,6 @@ focus_handler = (meta_window, user_data) => {
 propogate_forward = (workspace, n, x, lower) => {
     if (n < 0 || n >= workspace.length)
         return
-    // print("positioning " + n)
     let meta_window = workspace[n]
     if (lower)
         meta_window.lower()
@@ -185,7 +184,6 @@ propogate_forward = (workspace, n, x, lower) => {
 propogate_backward = (workspace, n, x, lower) => {
     if (n < 0 || n >= workspace.length)
         return
-    // print("positioning " + n)
     let meta_window = workspace[n]
     x = x - meta_window.get_frame_rect().width
     // Anchor on the right edge for windows positioned to the left.
@@ -322,7 +320,6 @@ global.display.connect('window-created', dynamic_function_ref('window_created'))
 
 for (let i=0; i < global.screen.n_workspaces; i++) {
     let workspace = global.screen.get_workspace_by_index(i)
-    print("workspace: " + workspace)
     workspace.connect("window-added", dynamic_function_ref("add_handler"))
     workspace.connect("window-removed", dynamic_function_ref("remove_handler"));
     add_all_from_workspace(workspace);
@@ -392,6 +389,7 @@ PreviewedWindowNavigator = new Lang.Class({
     _init : function() {
         this.parent();
         this._selectedIndex = focus();
+        debug('***** Init preview ****', this._selectedIndex);
     },
 
     _initialSelection: function(backward, binding) {
@@ -408,17 +406,24 @@ PreviewedWindowNavigator = new Lang.Class({
     },
 
     _select: function(index) {
+        debug('Select:', this._getWindowList()[index].title);
         ensure_viewport(this._getWindowList()[index]);
         this.parent(index);
     },
 
     _finish: function(timestamp) {
         this.was_accepted = true;
+        debug('Finish', this._getWindowList()[this._selectedIndex].title);
+        // this._onDestroy();
         this.parent(timestamp);
+        this._onDestroy();
+        debug('Finish finished');
     },
 
     _onDestroy: function() {
+        debug('Destroy:', this._getWindowList()[index].title);
         if(!this.was_accepted && this._selectedIndex != focus()) {
+            debug('Abort', global.display.focus_window.title);
             ensure_viewport(global.display.focus_window);
         }
         this.parent();
